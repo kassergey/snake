@@ -1,0 +1,255 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <script type="text/javascript">
+    </script>
+    <title>Змійка</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+    <style>
+        #gameField{
+            border:5px solid black;
+            height:520px;
+            width:520px;
+        }
+        form{
+            background-color:aqua;
+            height:75px;
+        }
+        fieldset {
+            height: 50px;
+        }
+        table.snake{border-spacing:0px;}
+        td.snake{height:13px;width:13px; border:0px; padding:0px; border:0px;}
+        .popup__overlay {
+            display: none;
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,.7);
+            text-align: center;
+        }
+        .popup__overlay:after {
+            display: inline-block;
+            height: 100%;
+            width: 0;
+            vertical-align: middle;
+            content: '';
+        }
+        .popup {
+            display: inline-block;
+            position: relative;
+            max-width: 80%;
+            padding: 20px;
+            border: 5px solid #fff;
+            border-radius: 15px;
+            box-shadow: inset 0 2px 2px 2px rgba(0,0,0,.4);
+            background: #fff;
+            vertical-align: middle;
+            margin: auto;
+        }
+        .popup form{
+            background: inherit;
+        }
+    </style>
+    <link href="StyleSite.css" rel="stylesheet"/>
+</head>
+<body>
+    <nav id="navigationMenu">
+    </nav>
+    <script src="navigation.js"></script>
+    <div id="container">
+        <form>
+            <fieldset style="float:right;">
+                <legend>Досягнення</legend>
+                <label>З'їдено: </label><label id="ateFruits">0</label><br/>
+                <label>Рекорд: </label><label id="recordAteFruits">0</label>
+            </fieldset>
+            <fieldset style="float:left;">
+                <legend>Керування грою</legend>
+                <button type="button" class="myButton" onclick="clearInterval(intervalEvent, 0);" title="Призупинити гру">Пауза</button>
+                <button type="button" class="myButton" onclick="runIntervalEvent();" title="Продовжити гру">Продовжити</button>
+                <button type="button" class="myButton" onclick="location.reload()" title="Почати все заново">Нова гра</button>
+            </fieldset>
+        </form>
+        <div id="gameField">
+
+        </div>
+    </div>
+    <div class="popup__overlay">
+        <div class="popup">
+            <label>Гра закінчилася</label><br />
+            <button class="myButton" onclick="location.reload();">Почати нову гру</button>
+        </div>
+    </div>
+    <script>
+        //предыдущий рекорд
+        var record = localStorage.getItem('recordAteFruits');
+        if (record != undefined){
+            document.getElementById('recordAteFruits').innerHTML = record;
+        }
+        var intervalAmount = 100;
+        var fieldSnake = document.getElementById('gameField');
+        var tableFields = document.createElement('table');
+        tableFields.className = 'snake';
+        var intervalEvent;
+        var Fields = [];//для быстрого доступа к полям таблицы
+        var snake = [];
+        var fruit = { x: 0, y: 0 };
+        //формирование змейки
+        for (var i = 0; i<5; i++)
+        {
+            snake[i] = { x: 5 + i, y: 19 };
+        }
+        for (var i = 0; i < snake.length / 2; i++) {
+            var t = snake[i];
+            snake[i] = snake[snake.length - 1 - i];
+            snake[snake.length - 1 - i] = t;
+        }
+        //формирование таблицы
+        for (var i = 0; i < 40; i++)
+        {
+            var tr = document.createElement('tr');
+            tableFields.appendChild(tr);
+            tr.className = 'snake';
+            Fields[i] = [];
+            for (var j = 0; j < 40; j++) {
+                var td = document.createElement('td');
+                td.className = 'snake';
+                Fields[i][j] = td;
+                tr.appendChild(td);
+                tr.className = 'snake';
+            }
+        }
+        fieldSnake.appendChild(tableFields);
+
+        function draw()
+        {
+            for (var i = 0; i < 40; i++) {
+                for (var j = 0; j < 40; j++) {
+                    Fields[i][j].style.backgroundColor = "white";
+                }
+            }
+            for(var i = 0;i<snake.length;i++){
+                Fields[snake[i].y][snake[i].x].style.backgroundColor = "red";
+            }
+            Fields[fruit.y][fruit.x].style.backgroundColor = 'green';
+        }
+        function snakeOut()
+        {
+            if ((snake[0].x < 0) || (snake[0].y < 0) || (snake[0].x > 39) || (snake[0].y > 39))
+                return true;
+            for (var i = 1; i < snake.length; i++)
+            {
+                if (snake[0].x == snake[i].x && snake[0].y == snake[i].y)
+                    return true;
+            }
+            return false;
+        }
+        function fruitGenerate() {
+            var b = true;
+            var x;
+            var y;
+            while (b) {
+                var x = Math.floor(Math.random() * 38 + 1);
+                var y = Math.floor(Math.random() * 38 + 1);
+                b = false;
+                for (var i = 0; i < snake.length; i++) {
+                    if (x == snake[i].x && y == snake[i].y) {
+                        b = true;
+                    }
+                }
+            }
+            fruit.x = x;
+            fruit.y = y;
+        }
+        fruitGenerate();
+        var motionDirect = 0;//0-right, 1-down, 2-left, 3-up
+        var prevMotion = 2;
+        function endGame() {
+            p = $('.popup__overlay');
+            p.css('display', 'block');
+        }
+        function motion()
+        {
+            var lastDot = snake[snake.length - 1];
+            //сдвиг элементов в массиве
+            for (var i = snake.length - 1; i > 0; i--) {
+                snake[i] = snake[i - 1];
+            }
+            if (motionDirect == 0)
+            {
+                snake[0] = { x: snake[0].x + 1, y: snake[0].y };
+            }
+            else if (motionDirect == 1) {
+                snake[0] = { x: snake[0].x, y: snake[0].y + 1 };
+            }
+            else if (motionDirect == 2) {
+                snake[0] = { x: snake[0].x - 1, y: snake[0].y };
+            }
+            else if (motionDirect == 3) {
+                snake[0] = { x: snake[0].x, y: snake[0].y - 1 };
+            }
+            if (snake[0].x == fruit.x && snake[0].y == fruit.y)
+            {
+                snake[snake.length] = lastDot;
+                //clearInterval(intervalEvent);
+                //intervalAmount *= 0.98;
+                //intervalEvent = setInterval(motion, intervalAmount);
+                document.getElementById('ateFruits').innerHTML = ++document.getElementById('ateFruits').innerHTML;
+                fruitGenerate();
+            }
+            if (snakeOut()) {
+                if (Number(document.getElementById('recordAteFruits').innerHTML) < Number(document.getElementById('ateFruits').innerHTML)) {
+                    //setCookie('recordAteFruits', document.getElementById('ateFruits').innerHTML, 15);
+                    localStorage.setItem('recordAteFruits', document.getElementById('ateFruits').innerHTML);
+                }
+                endGame();
+            }
+            else
+            {
+                prevMotion = motionDirect;
+                draw();
+            }
+        }
+        intervalEvent = setInterval(motion, intervalAmount);
+        function runIntervalEvent()
+        {
+            clearInterval(intervalEvent);
+            intervalEvent = setInterval(motion, intervalAmount);
+        }
+        document.body.onkeydown = function (keyCode) {
+            if (keyCode.keyCode==87)
+                motionDirect = 3;
+            else if (keyCode.keyCode==65)
+                motionDirect = 2;
+            else if (keyCode.keyCode==83)
+                motionDirect = 1;
+            else if (keyCode.keyCode==68)
+                motionDirect = 0;
+            else if (keyCode.keyCode == 38)
+                motionDirect = 3;
+            else if (keyCode.keyCode == 37)
+                motionDirect = 2;
+            else if (keyCode.keyCode == 40)
+                motionDirect = 1;
+            else if (keyCode.keyCode == 39)
+                motionDirect = 0;
+            //при изменении направления движения в обратную сторону
+            if (((prevMotion == 0) && (motionDirect == 2)) || ((prevMotion == 2) && (motionDirect == 0))) {
+                var t = motionDirect;
+                motionDirect = prevMotion;
+                prevMotion = t;
+                return;
+            }
+            else if (((prevMotion == 1) && (motionDirect == 3)) || ((prevMotion == 3) && (motionDirect == 1))) {
+                var t = motionDirect;
+                motionDirect = prevMotion;
+                prevMotion = t;
+                return;
+            }
+        };
+    </script>
+</body>
+</html>

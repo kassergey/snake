@@ -1,0 +1,82 @@
+﻿*{margin:0px;}
+#container, #navigationMenu{
+    position:relative;
+    left:50%;
+    width:530px;
+    margin-left:-265px;
+    background-color:white;
+}
+#container p::first-letter
+{
+    font-size:xx-large;
+}
+#container p
+{
+    font-family:'Comic Sans MS';
+}
+figure
+{
+    text-align:center;
+}
+figcaption
+{
+    text-align:center;
+    font-style:italic;
+}
+mark.termin{
+    background-color:inherit;
+    font-weight:bold;
+}
+#navigationMenu
+{
+    background-color:cadetblue;
+    width:520px;
+    padding:5px;
+}
+ul.hr {
+    margin: 0; /* Обнуляем значение отступов */
+    padding: 4px; /* Значение полей */
+}
+ul.hr li {
+    display: inline; /* Отображать как строчный элемент */
+    margin-right: 5px; /* Отступ слева */
+    border: 1px solid #000; /* Рамка вокруг текста */
+    padding: 3px; /* Поля вокруг текста */
+    font:bold 16px arial;
+    background-color:blue;
+}
+ul.hr li:hover
+{
+    background-color:CornflowerBlue;
+}
+ul.hr li a{
+    color:red;
+    text-decoration:none;
+}
+.myButton {
+	-moz-box-shadow:inset 0px 20px 0px -15px #b54b3a;
+	-webkit-box-shadow:inset 0px 20px 0px -15px #b54b3a;
+	box-shadow:inset 0px 20px 0px -15px #b54b3a;
+	background-color:#a73f2d;
+	border:1px solid #241d13;
+	display:inline-block;
+	cursor:pointer;
+	color:#ffffff;
+	font-family:Arial;
+	font-size:14px;
+    border-radius:7px;
+	/*font-weight:bold;
+	padding:9px 23px;*/
+	text-decoration:none;
+	text-shadow:0px -1px 0px #7a2a1d;
+}
+.myButton:hover {
+	background-color:#b34332;
+}
+.myButton:active {
+	position:relative;
+	top:1px;
+}
+body{
+    background-color:aqua;
+}
